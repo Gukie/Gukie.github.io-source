@@ -1,3 +1,4 @@
+# Spring的BeanFactory.getBeansOfType与Dubbo的ReferenceBean冲突
 
 
 <br />
@@ -112,7 +113,10 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
 ```
 
 <br />
-<br />这样就会尝试去实例化ReferenceBean了，最后就会走到org.apache.dubbo.config.spring.ReferenceBean#afterPropertiesSet， 由于现在还只是在BeanDefinition处理阶段，还并没有到占位符的设置阶段，所以是读取不到占位符的值的，所以它还是原来的模样: ${zookeeper.address}, 并没有变形<br />![2333.png](https://cdn.nlark.com/yuque/0/2020/png/289364/1588851051637-65d5b64e-dec9-4390-b411-08d1b32d41b9.png#align=left&display=inline&height=1200&margin=%5Bobject%20Object%5D&name=2333.png&originHeight=1200&originWidth=2788&size=477519&status=done&style=none&width=2788)<br />
+<br />这样就会尝试去实例化ReferenceBean了，最后就会走到org.apache.dubbo.config.spring.ReferenceBean#afterPropertiesSet， 由于现在还只是在BeanDefinition处理阶段，还并没有到占位符的设置阶段，所以是读取不到占位符的值的，所以它还是原来的模样: ${zookeeper.address}, 并没有变形<br />
+
+
+<br />![image.png](https://cdn.nlark.com/yuque/0/2020/png/289364/1588851051637-65d5b64e-dec9-4390-b411-08d1b32d41b9.png#align=left&display=inline&height=321&margin=%5Bobject%20Object%5D&name=2333.png&originHeight=1200&originWidth=2788&size=477519&status=done&style=none&width=746)<br />
 
 <a name="up6HB"></a>
 ### 解决
