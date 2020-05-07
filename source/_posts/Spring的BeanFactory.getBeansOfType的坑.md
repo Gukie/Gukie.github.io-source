@@ -1,4 +1,4 @@
-# Spring的BeanFactory.getBeansOfType与Dubbo的ReferenceBean冲突
+# Spring的BeanFactory.getBeansOfType的坑
 
 
 <br />
@@ -114,9 +114,7 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
 
 <br />
 <br />这样就会尝试去实例化ReferenceBean了，最后就会走到org.apache.dubbo.config.spring.ReferenceBean#afterPropertiesSet， 由于现在还只是在BeanDefinition处理阶段，还并没有到占位符的设置阶段，所以是读取不到占位符的值的，所以它还是原来的模样: ${zookeeper.address}, 并没有变形<br />
-
-
-<br />![image.png](https://cdn.nlark.com/yuque/0/2020/png/289364/1588851051637-65d5b64e-dec9-4390-b411-08d1b32d41b9.png#align=left&display=inline&height=321&margin=%5Bobject%20Object%5D&name=2333.png&originHeight=1200&originWidth=2788&size=477519&status=done&style=none&width=746)<br />
+<br />![2333.png](https://cdn.nlark.com/yuque/0/2020/png/289364/1588851051637-65d5b64e-dec9-4390-b411-08d1b32d41b9.png#align=left&display=inline&height=321&margin=%5Bobject%20Object%5D&name=2333.png&originHeight=1200&originWidth=2788&size=477519&status=done&style=none&width=746)<br />this<br />
 
 <a name="up6HB"></a>
 ### 解决
@@ -144,3 +142,87 @@ public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) 
 
     }
 ```
+
+<br />
+
+<a name="LfS6k"></a>
+### 事情还在急需
+
+<br />然而事情并没有那么简单，在后面的测试中，会发现，实现了IProxyBaseService的类，其field都是null.<br />![image.png](https://cdn.nlark.com/yuque/0/2020/png/289364/1588866056546-e1053025-c10a-4151-97f0-541d6b28fb3e.png?x-oss-process=image%2Fresize%2Cw_1466)<br />
+<br />这很严重啊。既然是都为空，那么看看它是什么时候进行初始化的，然后找了一个类，在其后面加了个InitializingBean进行断点调试
+```java
+public class DeviceProxyServiceImpl implements IDeviceProxyService, InitializingBean{
+    ...
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        log.info("....");
+    }
+}
+```
+
+<br />
+<br />debug后，发现这是从 beanFactory.getBeansOfType(IProxyBaseService.class,false, false); 调用过来的。<br />代码如下: org.springframework.beans.factory.support.DefaultListableBeanFactory#getBeansOfType<br />
+
+```java
+public <T> Map<String, T> getBeansOfType(Class<T> type, boolean includeNonSingletons, boolean allowEagerInit)
+            throws BeansException {
+        // 1.这一行，是FactoryBean初始化的问题的根源
+        String[] beanNames = getBeanNamesForType(type, includeNonSingletons, allowEagerInit);
+        
+        Map<String, T> result = new LinkedHashMap<String, T>(beanNames.length);
+        // 2.可是事情并没有完，当找出了IProxyBaseService这个类的beanName之后，就到了这
+        for (String beanName : beanNames) {
+            try {
+               // 这里有一个getBean，然后就会去创建bean. 而此时bean都还没有实例化出来，所以都是null 
+                result.put(beanName, getBean(beanName, type));
+            }
+            catch (BeanCreationException ex) {
+                ...
+            }
+        }
+        return result;
+    }
+```
+
+<br />解决方法是, 不使用beanFactory.getBeansOfType， 而是使用BeanDefinitionRegistry去获取对应的beanName，然后找到对应的class做自己的业务
+```java
+ @Override
+    public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
+        String[] beanNames = registry.getBeanDefinitionNames();
+        if (beanNames == null || beanNames.length < 1) {
+            return;
+        }
+        for (String beanName : beanNames) {
+            BeanDefinition beanDefinition = registry.getBeanDefinition(beanName);
+            String beanClsName = beanDefinition.getBeanClassName();
+            if (!StringUtils.contains(beanClsName, "com.xxx.impl")) {
+                continue;
+            }
+
+            Class cls = ClassUtils.resolveClassName(beanClsName, Thread.currentThread().getContextClassLoader());
+            Set<Class<?>> interfaces = ClassUtils.getAllInterfacesAsSet(cls);
+            if (CollectionUtils.isEmpty(interfaces)) {
+                continue;
+            }
+            for (Class<?> interfaceCls : interfaces) {
+                if (!ClassUtils.isAssignable(IProxyBaseService.class, interfaceCls)) {
+                    continue;
+                }
+                checkInterfaceMethods(interfaceCls);
+            }
+        }
+
+    }
+```
+
+<br />
+
+<a name="dyGDj"></a>
+### 总结
+
+- 在bean没有实例化好的时候，不能随便使用beanFactory.getBeansOfType这个方法，这个会坑死人的
+- 在bean没有实例化时做一些校验，能减少系统资源的开销(链接创建/资源分配等)，但实现的时候需要千万小心
+
+
+<br />
+
