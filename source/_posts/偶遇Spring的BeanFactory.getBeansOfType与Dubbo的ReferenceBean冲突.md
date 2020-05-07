@@ -42,12 +42,12 @@ public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) 
 最后报以下错误:
 ```
 Caused by: java.lang.IllegalStateException: zookeeper not connected
-	at org.apache.dubbo.remoting.zookeeper.curator.CuratorZookeeperClient.<init>(CuratorZookeeperClient.java:83)
-	at org.apache.dubbo.remoting.zookeeper.curator.CuratorZookeeperTransporter.createZookeeperClient(CuratorZookeeperTransporter.java:26)
-	at org.apache.dubbo.remoting.zookeeper.support.AbstractZookeeperTransporter.connect(AbstractZookeeperTransporter.java:68)
-	at org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter$Adaptive.connect(ZookeeperTransporter$Adaptive.java)
-	at org.apache.dubbo.configcenter.support.zookeeper.ZookeeperDynamicConfiguration.<init>(ZookeeperDynamicConfiguration.java:62)
-	at org.apache.dubbo.configcenter.support.zookeeper.ZookeeperDynamicConfigurationFactory.createDynamicConfiguration(ZookeeperDynamicConfigurationFactory.java:37)
+    at org.apache.dubbo.remoting.zookeeper.curator.CuratorZookeeperClient.<init>(CuratorZookeeperClient.java:83)
+    at org.apache.dubbo.remoting.zookeeper.curator.CuratorZookeeperTransporter.createZookeeperClient(CuratorZookeeperTransporter.java:26)
+    at org.apache.dubbo.remoting.zookeeper.support.AbstractZookeeperTransporter.connect(AbstractZookeeperTransporter.java:68)
+    at org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter$Adaptive.connect(ZookeeperTransporter$Adaptive.java)
+    at org.apache.dubbo.configcenter.support.zookeeper.ZookeeperDynamicConfiguration.<init>(ZookeeperDynamicConfiguration.java:62)
+    at org.apache.dubbo.configcenter.support.zookeeper.ZookeeperDynamicConfigurationFactory.createDynamicConfiguration(ZookeeperDynamicConfigurationFactory.java:37)
 ```
 
 <br />这时候如果没有认真debug过，会认为zk链接不上了，然后把问题指向zk，从而偏离了问题的本质<br />
@@ -67,28 +67,27 @@ Map<String, IProxyBaseService> nameInstanceMap = beanFactory.getBeansOfType(IPro
 ```java
 // 这里的 allowEagerInit 会让条件为true
 if (!mbd.isAbstract() && (allowEagerInit ||
-							(mbd.hasBeanClass() || !mbd.isLazyInit() || isAllowEagerClassLoading()) &&
-									!requiresEagerInitForType(mbd.getFactoryBeanName()))) {
-						// In case of FactoryBean, match object created by FactoryBean.
-						boolean isFactoryBean = isFactoryBean(beanName, mbd);
-						BeanDefinitionHolder dbd = mbd.getDecoratedDefinition();
-						boolean matchFound =
-								(allowEagerInit || !isFactoryBean ||
-										(dbd != null && !mbd.isLazyInit()) || containsSingleton(beanName)) &&
-								(includeNonSingletons ||
-										(dbd != null ? mbd.isSingleton() : isSingleton(beanName))) &&
-							// 会走到这里	
-                            isTypeMatch(beanName, type);
-						if (!matchFound && isFactoryBean) {
-							// In case of FactoryBean, try to match FactoryBean instance itself next.
-							beanName = FACTORY_BEAN_PREFIX + beanName;
-							matchFound = (includeNonSingletons || mbd.isSingleton()) && isTypeMatch(beanName, type);
-						}
-						if (matchFound) {
-							result.add(beanName);
-						}
-					}
-				}
+        (mbd.hasBeanClass() || !mbd.isLazyInit() || isAllowEagerClassLoading()) &&
+                !requiresEagerInitForType(mbd.getFactoryBeanName()))) {
+    // In case of FactoryBean, match object created by FactoryBean.
+    boolean isFactoryBean = isFactoryBean(beanName, mbd);
+    BeanDefinitionHolder dbd = mbd.getDecoratedDefinition();
+    boolean matchFound =
+            (allowEagerInit || !isFactoryBean ||
+                    (dbd != null && !mbd.isLazyInit()) || containsSingleton(beanName)) &&
+            (includeNonSingletons ||
+                    (dbd != null ? mbd.isSingleton() : isSingleton(beanName))) &&
+        // 会进入到这里去  
+        isTypeMatch(beanName, type);
+    if (!matchFound && isFactoryBean) {
+        // In case of FactoryBean, try to match FactoryBean instance itself next.
+        beanName = FACTORY_BEAN_PREFIX + beanName;
+        matchFound = (includeNonSingletons || mbd.isSingleton()) && isTypeMatch(beanName, type);
+    }
+    if (matchFound) {
+        result.add(beanName);
+    }
+}
 ```
 
 <br />然后会进入到<br />org.springframework.beans.factory.support.AbstractBeanFactory#isTypeMatch的以下代码段
@@ -108,17 +107,17 @@ if (FactoryBean.class.isAssignableFrom(beanType)) {
 <br />![image.png](https://cdn.nlark.com/yuque/0/2020/png/289364/1588848219378-9e7cf3a4-76bf-4329-a9f8-e0a4d241ac1e.png#align=left&display=inline&height=603&margin=%5Bobject%20Object%5D&name=image.png&originHeight=1206&originWidth=2742&size=457609&status=done&style=none&width=1371)<br />而org.apache.dubbo.config.spring.ReferenceBean 正好是一个FactoryBean
 ```java
 public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean, ApplicationContextAware, InitializingBean, DisposableBean {
-	...
+    ...
 }
 ```
 
 <br />
-<br />这样就会尝试去实例化ReferenceBean了，最后就会走到org.apache.dubbo.config.spring.ReferenceBean#afterPropertiesSet， 由于现在还只是在BeanDefinition处理阶段，还并没有到占位符的设置阶段，所以是读取不到占位符的值的，所以它还是原来的模样: ${zookeeper.address}, 并没有变形<br />![image.png](https://cdn.nlark.com/yuque/0/2020/png/289364/1588848509239-897fae83-12f2-4879-9de6-42f556f7f5d6.png#align=left&display=inline&height=600&margin=%5Bobject%20Object%5D&name=image.png&originHeight=1200&originWidth=2788&size=477519&status=done&style=none&width=1394)<br />
-<br />
+<br />这样就会尝试去实例化ReferenceBean了，最后就会走到org.apache.dubbo.config.spring.ReferenceBean#afterPropertiesSet， 由于现在还只是在BeanDefinition处理阶段，还并没有到占位符的设置阶段，所以是读取不到占位符的值的，所以它还是原来的模样: ${zookeeper.address}, 并没有变形<br />![2333.png](https://cdn.nlark.com/yuque/0/2020/png/289364/1588851051637-65d5b64e-dec9-4390-b411-08d1b32d41b9.png#align=left&display=inline&height=1200&margin=%5Bobject%20Object%5D&name=2333.png&originHeight=1200&originWidth=2788&size=477519&status=done&style=none&width=2788)<br />
 
 <a name="up6HB"></a>
 ### 解决
-知道问题的原因了，改起来也很简单，就是 使用另外一个方法: `beanFactory.getBeansOfType(IProxyBaseService.class,false, false);`<br />最终代码如下：
+知道问题的原因了: beanFactory.getBeansOfType的参数allowEagerInit=true时会将FactoryBean初始化掉。<br />所以改起来也很简单，就是使用另外一个方法:<br />`beanFactory.getBeansOfType(IProxyBaseService.class,false, false);`<br />
+<br />最终代码如下：
 ```java
 public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
 
