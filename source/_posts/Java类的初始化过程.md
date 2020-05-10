@@ -72,7 +72,7 @@
 
 <a name="Yqlqk"></a>
 ### 实例创建的整个过程
-![类的初始化guocheng.svg](https://cdn.nlark.com/yuque/0/2019/svg/289364/1570285683740-cdad0d4a-5344-460d-afe2-78c72994fa30.svg#align=left&display=inline&height=569&margin=%5Bobject%20Object%5D&name=%E7%B1%BB%E7%9A%84%E5%88%9D%E5%A7%8B%E5%8C%96guocheng.svg&originHeight=569&originWidth=1131&size=16899&status=done&style=none&width=1131)<br />
+![类的初始化guocheng.svg](process.svg)<br />
 <br />
 <br />
 

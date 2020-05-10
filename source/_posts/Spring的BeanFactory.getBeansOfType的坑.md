@@ -55,15 +55,15 @@ Caused by: java.lang.IllegalStateException: zookeeper not connected
 
 <a name="MERTr"></a>
 ### 排查过程
-从报错看，我们可以讲断点放在 `CuratorZookeeperClient.java:83`， 然后会发现，此时的地址都是占位符的<br />![image.png](https://cdn.nlark.com/yuque/0/2020/png/289364/1588847505069-b8e3d43c-8a5e-475e-bf9d-fbcdbee14f18.png#align=left&display=inline&height=116&margin=%5Bobject%20Object%5D&name=image.png&originHeight=232&originWidth=1558&size=45480&status=done&style=none&width=779)<br />
-<br />此时我们可以将我们自己写的代码注释掉，看看结果是什么样的，会发现其实是有值的，那么可以断定是代码的问题<br />![image.png](https://cdn.nlark.com/yuque/0/2020/png/289364/1588847659913-82bbb5ac-7754-4142-9bd5-acc3534de032.png#align=left&display=inline&height=170&margin=%5Bobject%20Object%5D&name=image.png&originHeight=340&originWidth=1652&size=58743&status=done&style=none&width=826)<br />
+从报错看，我们可以讲断点放在 `CuratorZookeeperClient.java:83`， 然后会发现，此时的地址都是占位符的<br />![image.png](spring-1.png)<br />
+<br />此时我们可以将我们自己写的代码注释掉，看看结果是什么样的，会发现其实是有值的，那么可以断定是代码的问题<br />![image.png](spring-2.png)<br />
 <br />
 <br />
 <br />经过排查，发现这一行代码有问题
 ```java
 Map<String, IProxyBaseService> nameInstanceMap = beanFactory.getBeansOfType(IProxyBaseService.class);
 ```
-该代码会去找IProxyBaseService类的bean，但是它是使用了缺省参数的方法:<br />org.springframework.beans.factory.support.DefaultListableBeanFactory#getBeansOfType<br />![image.png](https://cdn.nlark.com/yuque/0/2020/png/289364/1588847864017-878ee6fd-c842-4932-9c04-d3e72e3fb25a.png#align=left&display=inline&height=82&margin=%5Bobject%20Object%5D&name=image.png&originHeight=164&originWidth=1420&size=37848&status=done&style=none&width=710)<br />
+该代码会去找IProxyBaseService类的bean，但是它是使用了缺省参数的方法:<br />org.springframework.beans.factory.support.DefaultListableBeanFactory#getBeansOfType<br />![image.png](spring-3.png)<br />
 <br />再往下会发现<br />org.springframework.beans.factory.support.DefaultListableBeanFactory#doGetBeanNamesForType
 ```java
 // 这里的 allowEagerInit 会让条件为true
@@ -105,7 +105,7 @@ if (FactoryBean.class.isAssignableFrom(beanType)) {
 }
 ```
 
-<br />![image.png](https://cdn.nlark.com/yuque/0/2020/png/289364/1588848219378-9e7cf3a4-76bf-4329-a9f8-e0a4d241ac1e.png#align=left&display=inline&height=603&margin=%5Bobject%20Object%5D&name=image.png&originHeight=1206&originWidth=2742&size=457609&status=done&style=none&width=1371)<br />而org.apache.dubbo.config.spring.ReferenceBean 正好是一个FactoryBean
+<br />![image.png](spring-4.png)<br />而org.apache.dubbo.config.spring.ReferenceBean 正好是一个FactoryBean
 ```java
 public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean, ApplicationContextAware, InitializingBean, DisposableBean {
     ...
@@ -114,7 +114,7 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
 
 <br />
 <br />这样就会尝试去实例化ReferenceBean了，最后就会走到org.apache.dubbo.config.spring.ReferenceBean#afterPropertiesSet， 由于现在还只是在BeanDefinition处理阶段，还并没有到占位符的设置阶段，所以是读取不到占位符的值的，所以它还是原来的模样: ${zookeeper.address}, 并没有变形<br />
-<br />![2333.png](https://cdn.nlark.com/yuque/0/2020/png/289364/1588851051637-65d5b64e-dec9-4390-b411-08d1b32d41b9.png#align=left&display=inline&height=321&margin=%5Bobject%20Object%5D&name=2333.png&originHeight=1200&originWidth=2788&size=477519&status=done&style=none&width=746)<br />this<br />
+<br />![image.png](spring-5.png)<br />this<br />
 
 <a name="up6HB"></a>
 ### 解决
@@ -148,7 +148,7 @@ public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) 
 <a name="LfS6k"></a>
 ### 事情还在急需
 
-<br />然而事情并没有那么简单，在后面的测试中，会发现，实现了IProxyBaseService的类，其field都是null.<br />![image.png](https://cdn.nlark.com/yuque/0/2020/png/289364/1588866056546-e1053025-c10a-4151-97f0-541d6b28fb3e.png?x-oss-process=image%2Fresize%2Cw_1466)<br />
+<br />然而事情并没有那么简单，在后面的测试中，会发现，实现了IProxyBaseService的类，其field都是null.<br />![image.png](spring-6.png)<br />
 <br />这很严重啊。既然是都为空，那么看看它是什么时候进行初始化的，然后找了一个类，在其后面加了个InitializingBean进行断点调试
 ```java
 public class DeviceProxyServiceImpl implements IDeviceProxyService, InitializingBean{
