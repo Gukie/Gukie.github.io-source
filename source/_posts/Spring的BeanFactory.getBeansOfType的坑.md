@@ -1,7 +1,4 @@
-# Spring的BeanFactory.getBeansOfType的坑
 
-
-<br />
 
 <a name="MojXv"></a>
 ### 背景及问题发现
