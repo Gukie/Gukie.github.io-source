@@ -114,7 +114,10 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
 
 <br />
 <br />这样就会尝试去实例化ReferenceBean了，最后就会走到org.apache.dubbo.config.spring.ReferenceBean#afterPropertiesSet， 由于现在还只是在BeanDefinition处理阶段，还并没有到占位符的设置阶段，所以是读取不到占位符的值的，所以它还是原来的模样: ${zookeeper.address}, 并没有变形<br />
-<br />![image.png](spring-5.png)<br />this<br />
+<br />
+
+![image.png](spring-5.png)
+
 
 <a name="up6HB"></a>
 ### 解决
@@ -146,7 +149,7 @@ public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) 
 <br />
 
 <a name="LfS6k"></a>
-### 事情还在急需
+### 事情还在继续
 
 <br />然而事情并没有那么简单，在后面的测试中，会发现，实现了IProxyBaseService的类，其field都是null.<br />![image.png](spring-6.png)<br />
 <br />这很严重啊。既然是都为空，那么看看它是什么时候进行初始化的，然后找了一个类，在其后面加了个InitializingBean进行断点调试
