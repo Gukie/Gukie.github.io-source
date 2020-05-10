@@ -15,7 +15,8 @@
 - 使用
 - 卸载
 
-![image.png](https://cdn.nlark.com/yuque/0/2019/png/289364/1570284249293-3cdb4e86-b68d-4e9b-94df-e13986f88617.png#align=left&display=inline&height=258&margin=%5Bobject%20Object%5D&name=image.png&originHeight=516&originWidth=1504&size=184431&status=done&style=none&width=752)<br />
+![image.png](linkage.png)
+
 <br />
 <br />
 
