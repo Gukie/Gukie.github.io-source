@@ -1,6 +1,5 @@
 ---
 categories: spring
-tags: java
 ---
 
 

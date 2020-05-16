@@ -109,3 +109,9 @@ deploy:
 #  on:
 #    branch: master
 
+algolia:
+  applicationID: '2JRVVP3GAX'
+  apiKey: 'fa76343785d784b964874717e40f84ad'
+  indexName: 'hexo_search'
+  chunkSize: 5000
+
