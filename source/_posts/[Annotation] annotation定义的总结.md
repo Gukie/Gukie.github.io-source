@@ -1,3 +1,8 @@
+---
+categories: 
+	- java
+	- 基础
+---
 # [Annotation] annotation定义的总结
 
 <a name="tyC3q"></a>

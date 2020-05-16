@@ -1,4 +1,8 @@
-
+---
+categories: 
+    - java 
+    - 基础
+---
 <br />
 <br />
 <br />
