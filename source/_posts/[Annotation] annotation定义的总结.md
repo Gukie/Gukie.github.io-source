@@ -4,6 +4,10 @@ date: 2020-05-16 11:12:25
 categories: 
     - java 
     - 基础
+
+tags:
+	- annotation
+	- java
 ---
 # [Annotation] annotation定义的总结
 

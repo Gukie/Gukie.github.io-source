@@ -3,6 +3,9 @@ title: 类的整个生命周期过程
 categories: 
     - java 
     - 基础
+
+tags: 
+    - java
 ---
 <br />
 <br />
