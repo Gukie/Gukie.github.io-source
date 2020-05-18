@@ -1,4 +1,5 @@
 ---
+title: Spring的BeanFactory.getBeansOfType的坑
 categories: spring
 ---
 
