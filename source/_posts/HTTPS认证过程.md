@@ -5,6 +5,14 @@ categories:
 tags: 
     - https
 ---
+
+### refer
+以下两篇文章对HTTPS解析的很详细，有图有真相，很好理解:
+- https://www.cnblogs.com/snowater/p/7804889.html
+- https://www.cnblogs.com/xdyixia/p/11610102.html
+
+
+### 正文
 HTTPS是在HTTP跟TCP之间加了一层对数据进行加解密的SSL/TLS
 
 - SSL: Secure Sockets Layer
