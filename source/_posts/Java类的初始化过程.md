@@ -1,5 +1,5 @@
 ---
-title: 类的整个生命周期过程
+title: Java类的初始化过程
 categories: 
     - java 
     - 基础
