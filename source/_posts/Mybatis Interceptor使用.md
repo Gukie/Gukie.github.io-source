@@ -18,7 +18,7 @@ tags:
 
 
 <br />
-<br />不能自定义，因为这样是找不到的，比如以下被注释掉的，就是因为找不到所以
+<br />不能自定义，因为这样是找不到的，比如以下这种自定义的 LockPwdDAO.class 是找不到的
 ```java
 @Intercepts(
         {@Signature(type = LockPwdDAO.class, method = "save", args = {BaseDO.class}),
