@@ -219,3 +219,66 @@ public class TimeStampTransferInterceptor implements Interceptor {
         </property>
     </bean>
 ```
+
+### 多个interceptor的执行顺序
+
+<br />定义在后面的会先执行。 以下定义中，`Interceptor2` 会在 `Interceptor1`之前执行
+```xml
+<plugins>
+    <plugin interceptor="cn.common.interceptor.Interceptor1"/>
+    <plugin interceptor="cn.common.interceptor.Interceptor2"/>
+</plugins>
+```
+
+<br />执行的时候，是以以下顺序进行执行的![interceptor-invoke-sequence.jpg](interceptor-invoke-sequence.jpg)<br />
+<br />所以在xml定义中的最后一个interceptor会被第一个执行，但是却最后一个执行完(因为要等其他interceptor执行完之后它才能结束)，所以可以在该Interceptor上做一些统一的处理(比如Exception的兜底处理，时间的统计等), 类似:
+```java
+public Object intercept(Invocation invocation) throws Throwable {
+        try {
+            return invocation.proceed();
+        } catch (Throwable ex) {
+            // 统一的异常处理
+            ...
+        }
+    }
+```
+
+<br />那为什么执行顺序是这样的呢？<br />从 `org.apache.ibatis.plugin.InterceptorChain#pluginAll` 中可以找到答案:
+```java
+public class InterceptorChain {
+
+  private final List<Interceptor> interceptors = new ArrayList<>();
+
+  // 答案在这里
+  public Object pluginAll(Object target) {
+    for (Interceptor interceptor : interceptors) {
+      target = interceptor.plugin(target);
+    }
+    return target;
+  }
+
+  public void addInterceptor(Interceptor interceptor) {
+    interceptors.add(interceptor);
+  }
+
+  public List<Interceptor> getInterceptors() {
+    return Collections.unmodifiableList(interceptors);
+  }
+
+}
+```
+
+
+1. 首先， 给 target 做plugin的时候，是按照 interceptors的顺序进行的，也就是按照interceptor在xml中的定义进行的
+1. 最上面的，先进行 `target = interceptor.plugin(target);` 后面的后进行
+1. 我们注意到  `interceptor.plugin(target); ` 执行完之后是会将结果覆盖掉 target的，即每做一次 拦截器的plugin，target都是会变更的. 所以
+  1. 拦截器1 被插入到target
+  1. 之后拦截器2再插进去
+  1. 再之后是拦截器3
+  1. 这样就形成像将羽毛球放入桶里一样，先进去的在最底下后进去的在最上面这样的队形:
+```
+拦截器3-->拦截器2-->拦截器1
+```
+
+
+4. 所以在执行的时候，是在最上面的先进行执行, 即 拦截器3
