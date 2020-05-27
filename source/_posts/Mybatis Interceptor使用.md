@@ -222,12 +222,15 @@ public class TimeStampTransferInterceptor implements Interceptor {
 
 ### 多个interceptor的执行顺序
 
-<br />定义在后面的会先执行。 以下定义中，`Interceptor2` 会在 `Interceptor1`之前执行
+<br />定义在后面的会先执行。 以下定义中，`interceptor1` 会在 `interceptor2`之前执行
 ```xml
-<plugins>
-    <plugin interceptor="cn.common.interceptor.Interceptor1"/>
-    <plugin interceptor="cn.common.interceptor.Interceptor2"/>
-</plugins>
+<property name="plugins">
+    <array>
+        <bean id="interceptor2" class="com.tuya.hulk.dal.interceptor.Interceptor2"/>
+        <bean id="interceptor1" class="com.tuya.hulk.dal.interceptor.Interceptor1"/>
+    </array>
+</property>
+
 ```
 
 <br />执行的时候，是以以下顺序进行执行的![interceptor-invoke-sequence.jpg](interceptor-invoke-sequence.jpg)<br />
