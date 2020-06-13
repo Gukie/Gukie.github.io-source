@@ -26,8 +26,6 @@ excerpt: 我们都知道，maven可以帮助我们管理依赖，否则我们就
 
 <a name="AkmXp"></a>
 ### maven的一些知识整理
-<a name="zuSd4"></a>
-#### <br />
 <a name="l0Npl"></a>
 #### 1. maven的仲裁机制
 所谓仲裁，就是出现冲突时会怎么抉择。maven会将项目的依赖信息，做成一棵树的形状，如果有两个一样的jar，但他们的版本不一样
@@ -74,6 +72,7 @@ A->C->E->D2.0
 ```
 <br />
 <a name="HYXQc"></a>
+
 #### 3. 一个dependency的表示
 ```xml
 <project>
@@ -130,8 +129,8 @@ dependency的scope表示其作用范围，同时也确定了其传递性，有6�
 
 <br />
 <a name="tvvmD"></a>
-### 插件相关
 
+### 插件相关
 
 <a name="ZjN36"></a>
 #### 1. 生命周期简单介绍
