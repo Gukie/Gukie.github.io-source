@@ -1,15 +1,28 @@
 ---
 title: maven知识整理+插件编写
 categories: 
-    - maven 
+    - [maven, plugin]
 
 tags: 
     - maven
+
+excerpt: 我们都知道，maven可以帮助我们管理依赖，否则我们就需要采用古老的方式，单独从其他地方找到对应的jar，然后放到classpath中，这样很麻烦也很容易出现兼容问题
+
 ---
+
+<a name="9xWL1"></a>
+### refer
+
+- [https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html](https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html) (仲裁机制+scope等知识)
+- [https://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html](https://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html) (lifeCycle+phase+goal)
+- [https://maven.apache.org/guides/plugin/guide-java-plugin-development.html](https://maven.apache.org/guides/plugin/guide-java-plugin-development.html) （插件编写）
+- [https://maven.apache.org/guides/mini/guide-configuring-plugins.html#Using_the_executions_Tag](https://maven.apache.org/guides/mini/guide-configuring-plugins.html#Using_the_executions_Tag) (插件参数的配置)
+
+
 
 
 <br />
-<br />我们都知道，maven可以帮助我们管理依赖，否则我们就需要采用古老的方式，单独从其他地方找到对应的jar，然后放到classpath中，这样很麻烦也很容易出现兼容问题. 这里稍微做一些整理<br />
+<br />我们都知道，maven可以帮助我们管理依赖，否则我们就需要采用古老的方式，单独从其他地方找到对应的jar，然后放到classpath中，这样很麻烦也很容易出现兼容问题.<br />
 
 <a name="AkmXp"></a>
 ### maven的一些知识整理
@@ -638,16 +651,6 @@ public class FileRetriever {
 
 <br />
 <br />
-
-
-<a name="9xWL1"></a>
-### refer
-
-- [https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html](https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html) (仲裁机制+scope等知识)
-- [https://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html](https://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html) (lifeCycle+phase+goal)
-- [https://maven.apache.org/guides/plugin/guide-java-plugin-development.html](https://maven.apache.org/guides/plugin/guide-java-plugin-development.html) （插件编写）
-- [https://maven.apache.org/guides/mini/guide-configuring-plugins.html#Using_the_executions_Tag](https://maven.apache.org/guides/mini/guide-configuring-plugins.html#Using_the_executions_Tag) (插件参数的配置)
-
 
 
 
