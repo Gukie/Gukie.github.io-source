@@ -13,9 +13,7 @@ excerpt: 当使用惯了springboot之后，就不再喜欢代码里有配置文�
 
 
 <br />当我们从配置中心读取配置信息的时候，通常会将读取配置中心的代码封装成一个bean. 然后将该bean赋予给PropertyPlaceHolder. <br />
-<br />
-<br />
-<br />
+
 
 <a name="CGtVZ"></a>
 ### spring配置文件方式实现
@@ -101,11 +99,16 @@ public class MousikaPropertiesFactoryBean implements FactoryBean<Properties>, En
 
 <a name="C4jzH"></a>
 #### xml文件设置过程
-Spring在启动的时候，会解析xml文件，是通过org.springframework.context.config.PropertyPlaceholderBeanDefinitionParser进行解析，然后将属性设置在org.springframework.context.support.PropertySourcesPlaceholderConfigurer中<br />![image.png](1.png)<br />
+
+Spring在启动的时候，会解析xml文件，是
+
+- 通过org.springframework.context.config.PropertyPlaceholderBeanDefinitionParser进行解析
+- 然后将属性设置在org.springframework.context.support.PropertySourcesPlaceholderConfigurer中
+<br />![image.png](1.png)<br />
 <br />
 
 1. 解析xml `<context:property-placeholder properties-ref="configBean"/>` 的代码是
-<br />代码位置: org.springframework.context.config.AbstractPropertyLoadingBeanDefinitionParser#doParse
+代码位置: org.springframework.context.config.AbstractPropertyLoadingBeanDefinitionParser#doParse
 ```java
 @Override
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
@@ -120,7 +123,7 @@ Spring在启动的时候，会解析xml文件，是通过org.springframework.con
 
 
 2. 将beanName以RuntimeBeanReference的形式包装起来:
-<br />代码位置： org.springframework.beans.factory.support.BeanDefinitionBuilder#addPropertyReference
+代码位置： org.springframework.beans.factory.support.BeanDefinitionBuilder#addPropertyReference
 ```java
 public BeanDefinitionBuilder addPropertyReference(String name, String beanName) {
     // 这里将beanName以 RuntimeBeanReference包装起来
@@ -134,7 +137,7 @@ public BeanDefinitionBuilder addPropertyReference(String name, String beanName) 
 #### propertyValue数据读取与设置
 
 <br />在处理 org.springframework.context.config.PropertyPlaceholderBeanDefinitionParser 的时候，会通过以下代码进行处理<br />
-<br />org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#applyPropertyValues
+1. org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#applyPropertyValues
 ```java
 protected void applyPropertyValues(String beanName, BeanDefinition mbd, BeanWrapper bw, PropertyValues pvs) {
 		...
@@ -150,9 +153,8 @@ protected void applyPropertyValues(String beanName, BeanDefinition mbd, BeanWrap
 				...
 	}
 ```
-![image.png](2.png)<br />
-<br />
-<br />org.springframework.beans.factory.support.BeanDefinitionValueResolver#resolveValueIfNecessary
+![image.png](2.png)
+2. org.springframework.beans.factory.support.BeanDefinitionValueResolver#resolveValueIfNecessary
 ```java
 public Object resolveValueIfNecessary(Object argName, Object value) {
 		// We must check each value to see whether it requires a runtime reference
